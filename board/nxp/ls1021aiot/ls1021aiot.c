@@ -49,6 +49,13 @@ int checkboard(void)
 	printf("CPLD:  V%d.%d\n", ((cpldrev >> 28) & 0xf), ((cpldrev >> 24) &
 		0xf));
 #endif
+	{
+		struct ccsr_ddr *ddr = (struct ccsr_ddr *)CFG_SYS_FSL_DDR_ADDR;
+
+		printf("ECC:   %s, errors 0x%08x\n",
+		       in_be32(&ddr->sdram_cfg) & SDRAM_CFG_ECC_EN ? "on" : "off",
+		       in_be32(&ddr->err_detect));
+	}
 	return 0;
 }
 
@@ -98,6 +105,18 @@ void ddrmc_init(void)
 	temp_sdram_cfg = (DDR_SDRAM_CFG_MEM_EN & ~SDRAM_CFG_BI);
 
 	out_be32(&ddr->sdram_cfg, DDR_SDRAM_CFG | temp_sdram_cfg);
+
+	/*
+	 * With D_INIT the controller writes all of the memory, and so a valid
+	 * ECC code, before it may be used: wait for it (about 0.3 s for 1 GiB).
+	 * The SPL timer does not run yet here, so count register reads
+	 * instead of using udelay(); the bound is several seconds.
+	 */
+	for (tmp = 0; tmp < 100000000; tmp++)
+		if (!(in_be32(&ddr->sdram_cfg_2) & SDRAM_CFG2_D_INIT))
+			break;
+	if (tmp == 100000000)
+		puts("DDR: memory initialization did not finish\n");
 }
 
 int dram_init(void)

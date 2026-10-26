@@ -14,7 +14,8 @@
  * DDR: 800 MHz ( 1600 MT/s data rate )
  */
 
-#define DDR_SDRAM_CFG			0x470c0008
+/* ECC_EN and ACC_ECC_EN: 4 ECC lanes on U14 carry the 8-bit code of each 64 bits */
+#define DDR_SDRAM_CFG			0x670c000c
 #define DDR_CS0_BNDS			0x008000bf
 #define DDR_CS0_CONFIG			0x80014302
 #define DDR_TIMING_CFG_0		0x50550004
@@ -37,6 +38,7 @@
 #define DDR_CS0_CONFIG_2		0
 #define DDR_SDRAM_CFG_MEM_EN	0x80000000
 #define SDRAM_CFG2_D_INIT		0x00000010
+#define SDRAM_CFG_ECC_EN		0x20000000
 #define DDR_CDR2_VREF_TRAIN_EN	0x00000080
 #define SDRAM_CFG2_FRC_SR		0x80000000
 #define SDRAM_CFG_BI			0x00000001
