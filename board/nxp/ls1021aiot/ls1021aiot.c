@@ -52,8 +52,9 @@ int checkboard(void)
 	{
 		struct ccsr_ddr *ddr = (struct ccsr_ddr *)CFG_SYS_FSL_DDR_ADDR;
 
-		printf("ECC:   %s, errors 0x%08x\n",
+		printf("ECC:   %s%s, errors 0x%08x\n",
 		       in_be32(&ddr->sdram_cfg) & SDRAM_CFG_ECC_EN ? "on" : "off",
+		       in_be32(&ddr->sdram_cfg_3) & 0x40000000 ? ", fixing and scrubbing" : "",
 		       in_be32(&ddr->err_detect));
 	}
 	return 0;
@@ -117,6 +118,15 @@ void ddrmc_init(void)
 			break;
 	if (tmp == 100000000)
 		puts("DDR: memory initialization did not finish\n");
+
+	/*
+	 * ECC corrects a single-bit error on the way to the CPU but leaves it
+	 * in memory, so every later read of that word raises it again. With
+	 * ECC_FIX_EN the controller writes the corrected word back; the scrub
+	 * reads walk through all of the memory to fix the words nobody reads.
+	 * Only allowed once D_INIT is done.
+	 */
+	out_be32(&ddr->sdram_cfg_3, DDR_SDRAM_CFG_3_SCRUB);
 }
 
 int dram_init(void)

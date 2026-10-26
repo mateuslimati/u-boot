@@ -39,6 +39,8 @@
 #define DDR_SDRAM_CFG_MEM_EN	0x80000000
 #define SDRAM_CFG2_D_INIT		0x00000010
 #define SDRAM_CFG_ECC_EN		0x20000000
+/* ECC_FIX_EN, and a scrub read every 8 refreshes: about 17 min per pass over 1 GiB */
+#define DDR_SDRAM_CFG_3_SCRUB		0x44000000
 #define DDR_CDR2_VREF_TRAIN_EN	0x00000080
 #define SDRAM_CFG2_FRC_SR		0x80000000
 #define SDRAM_CFG_BI			0x00000001
