@@ -283,6 +283,7 @@ struct fsl_qspi {
 	u32 memmap_size;
 	const struct fsl_qspi_devtype_data *devtype_data;
 	int selected;
+	bool sample_half_cycle;
 };
 
 static inline int needs_swap_endian(struct fsl_qspi *q)
@@ -741,10 +742,17 @@ static int fsl_qspi_default_setup(struct fsl_qspi *q)
 			    base + QUADSPI_FLSHCR);
 
 	reg = qspi_readl(q, base + QUADSPI_SMPR);
-	qspi_writel(q, reg & ~(QUADSPI_SMPR_FSDLY_MASK
-			| QUADSPI_SMPR_FSPHS_MASK
-			| QUADSPI_SMPR_HSENA_MASK
-			| QUADSPI_SMPR_DDRSMP_MASK), base + QUADSPI_SMPR);
+	reg &= ~(QUADSPI_SMPR_FSDLY_MASK
+		 | QUADSPI_SMPR_FSPHS_MASK
+		 | QUADSPI_SMPR_HSENA_MASK
+		 | QUADSPI_SMPR_DDRSMP_MASK);
+	/*
+	 * Some boards return every byte shifted right by one bit unless
+	 * the controller samples on the second half of the clock cycle.
+	 */
+	if (q->sample_half_cycle)
+		reg |= QUADSPI_SMPR_FSPHS_MASK;
+	qspi_writel(q, reg, base + QUADSPI_SMPR);
 
 	/* We only use the buffer3 for AHB read */
 	qspi_writel(q, 0, base + QUADSPI_BUF0IND);
@@ -825,6 +833,7 @@ static int fsl_qspi_probe(struct udevice *bus)
 	q->ahb_addr = map_physmem(res.start, res.end - res.start, MAP_NOCACHE);
 	q->memmap_phy = res.start;
 	q->memmap_size = res.end - res.start;
+	q->sample_half_cycle = dev_read_bool(bus, "fsl,qspi-sample-half-cycle");
 
 	dm_bus->max_hz = fdtdec_get_int(blob, node, "spi-max-frequency",
 					66000000);
