@@ -34,6 +34,8 @@
 		spi-max-frequency = <20000000>;
 		/* plain READ loses the first byte now and then */
 		m25p,fast-read;
+		/* all four data lines are wired */
+		spi-rx-bus-width = <4>;
 		reg = <0>;
 	};
 
@@ -43,6 +45,7 @@
 		compatible = "jedec,spi-nor";
 		spi-max-frequency = <20000000>;
 		m25p,fast-read;
+		spi-rx-bus-width = <4>;
 		reg = <1>;
 	};
 };
