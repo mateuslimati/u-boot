@@ -1861,6 +1861,7 @@ config TARGET_LS1021AIOT
 	bool "Support ls1021aiot"
 	select ARCH_LS1021A
 	select ARCH_SUPPORT_PSCI
+	select ARMV7_SET_CORTEX_SMPEN
 	select BOARD_LATE_INIT
 	select CPU_V7A
 	select CPU_V7_HAS_NONSEC
