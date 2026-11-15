@@ -191,6 +191,16 @@ int board_init(void)
 
 	ls102xa_smmu_stream_id_init();
 
+#if defined(CONFIG_QSPI_BOOT) && defined(CONFIG_SYS_FSL_QSPI_SKIP_CLKSEL)
+	/*
+	 * Running from DDR now: speed up the QSPI clock, which had to stay at
+	 * its reset value while U-Boot ran from the flash. The driver sets the
+	 * sampling point it needs at this clock when it probes.
+	 */
+	out_be32(&((struct ccsr_scfg *)CFG_SYS_FSL_SCFG_ADDR)->qspi_cfg,
+		 SCFG_QSPI_CLKSEL);
+#endif
+
 	return 0;
 }
 
